@@ -5,7 +5,7 @@ import streamlit as st
 
 from helpers import conn_engin
 
-st.write('Dashboard')
+st.title('Dashboard')
 
 
 engine = conn_engin.get_engine()
