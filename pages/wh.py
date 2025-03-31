@@ -5,4 +5,4 @@ import streamlit as st
 
 
 
-st.write("Warehouse")
+st.title("Warehouse")
