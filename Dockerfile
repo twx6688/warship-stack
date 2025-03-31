@@ -1,23 +1,24 @@
-# Use an official Python 3.10 image as a parent image
-FROM python:3.10-slim
-
-# Set the working directory to /app
+# Build stage: install dependencies
+FROM python:3.10-slim as builder
 WORKDIR /app
 
-# Copy the requirements file into the container at /app
-COPY requirements.txt ./
+# Only copy requirements first to leverage caching
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Install packages from requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Runtime stage: use a clean image
+FROM python:3.10-slim
+WORKDIR /app
 
-# Copy the rest of your code into the container
+# Copy installed packages and binaries from the builder stage
+COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy the rest of your application code
 COPY . .
 
-# Expose the port your Streamlit app uses
 EXPOSE 8503
-
-# Ensure stdout/stderr is unbuffered
 ENV PYTHONUNBUFFERED=1
 
-# Command to run your Streamlit app
 CMD ["streamlit", "run", "app.py", "--server.port", "8503", "--server.address", "0.0.0.0"]
